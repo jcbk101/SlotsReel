@@ -1,0 +1,92 @@
+
+local objects = {
+	"reel_left",
+	"reel_center",
+	"reel_right",
+	"spin_button"
+}
+
+local reels = {}
+
+----------------------------------------
+--
+-- Spin the reels and win!
+--
+----------------------------------------
+local function spinTheReels(self)
+
+	-------------------------
+	for i, slot in pairs(reels) do
+		-- Get the reels current position
+		local pos = gui.get_position(slot.reel)
+
+		-- { reel = self.reel_left, delay = 0.5, spins = 6.0 },
+		-- { reel = self.reel_center, delay = 0.0, spins = 8.0 },
+		-- { reel = self.reel_right, delay = 0.75, spins = 7.0 }
+		gui.cancel_animation(slot.reel, "position.z")
+		gui.set_position(slot.reel, vmath.vector3(pos.x, pos.y, 0))				
+		gui.animate(slot.reel, "position.z", slot.spins, gui.EASING_INQUAD, 8, slot.delay,
+		function()
+			gui.set_position(slot.reel, vmath.vector3(pos.x, pos.y, 0))
+		end)
+	end
+
+	-- Spin the GO's reel
+	msg.post("/reel_spr", "spin", { spins = 8, delay = 0} )
+end
+
+
+------------------------------------
+-- Init data
+------------------------------------
+function init(self)
+
+	msg.post(".", "acquire_input_focus")
+	
+	-- Create an indexable table
+	for i, obj in pairs(objects) do
+		self[ obj ] = gui.get_node(obj)
+	end
+
+	-- Set the reel data for access within the script's scope
+	reels = {
+		{ reel = self.reel_left, delay = 0.5, spins = 6.0 },
+		{ reel = self.reel_center, delay = 0.0, spins = 8.0 },
+		{ reel = self.reel_right, delay = 0.75, spins = 7.0 }
+	}
+
+end
+
+
+-------------------------------------
+--
+--
+--
+-------------------------------------
+function final(self)
+
+	msg.post(".", "release_input_focus")
+end
+
+
+-------------------------------------
+--
+--
+--
+-------------------------------------
+function on_message(self, message_id, message, sender)
+
+end
+
+-------------------------------------
+--
+-- Input responses to button presses
+--
+-------------------------------------
+function on_input(self, action_id, action)
+
+	if action_id == hash("touch") and action.released then
+		spinTheReels(self)
+	end
+end
+

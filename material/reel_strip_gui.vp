@@ -1,0 +1,29 @@
+uniform highp mat4 view_proj;
+
+// positions are in world space
+attribute mediump vec3 position;
+attribute mediump vec2 texcoord0;
+attribute lowp vec4 color;
+
+varying mediump vec2 var_texcoord0;
+varying lowp vec4 var_color;
+varying lowp float var_strip;
+
+void main()
+{
+    var_texcoord0 = texcoord0;
+    var_color = vec4(color.rgb * color.a, color.a);
+
+    // Z is used for the reel's position
+    var_strip = position.z;
+
+    // Z MUST = 0 at all times or the reel will blink / disappear
+    gl_Position = view_proj * vec4(position.xy, 0.0, 1.0);
+    
+    // var_texcoord0 = texcoord0;
+    // var_color = vec4(color.rgb * color.a, color.a);
+    // // Controls the reel spinning
+    // var_strip = vec2(position.z, 0.0);
+    // 
+    // gl_Position = view_proj * vec4(position.xy, 0, 1.0);
+}
